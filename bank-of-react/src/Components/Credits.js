@@ -1,58 +1,64 @@
 import React, {Component} from 'react';
 import {Link} from 'react-router-dom';
-import {Redirect} from 'react-router-dom';
+import AccountBalance from "./AccountBalance";
+import PropTypes from 'prop-types';
+import axios from 'axios';
 
-class Credit extends Component{
-    constructor(){
+class Credits extends Component{
+    constructor () {
         super();
         this.state = {
-            info: {
-                description: "",
-                amount: 0,
-                date: ""
-            },
-            redirect: false
-        };
+            credits: [], amount: 0, creditTotal: 0, date: "", description: ""
+        }
+        this.handleChange = this.handleChange.bind(this);
+    }
+
+    componentDidMount() { 
+        axios.get("https://moj-api.herokuapp.com/credits")
+        .then((result) => {
+            const res = result.data;
+            console.log(res);
+            this.setState({credits: res});
+            let totalAmount = 0;
+            res.forEach((credit) => (totalAmount += credit.amount));
+            this.setState({totalCredit: totalAmount});
+        })
     }
 
     handleChange = (input) => {
-        const creditU = {...this.state.info};
-        const nameIn = input.target.name;
-        const valueIn = input.target.value;
-        creditU[nameIn] = valueIn;
-        this.setState({info: creditU});
-    };
+        const n = input.target.name;
+        const v = input.target.value;
+        this.setState({[n]: v});
+    }
 
     handleSubmit = (output) => {
         output.preventDefault();
-        this.props.addCredit(this.state.info);
-        this.setState({redirect: true});
-    };
+        let cred = {amount: Number(this.state.amount), date: new Date().toISOString(), description: this.state.description};
+        let arrayOfCredits = [...this.state.credits, cred];
+        this.setState({credits: arrayOfCredits});
+        let totalAmount = 0;
+        arrayOfCredits.forEach((credit) => (totalAmount += credit.amount));
+        const displayTotal = totalAmount.toFixed(2);
+        this.setState({creditTotal: displayTotal});
+    }
 
-    render() {
-        if(this.state.redirect){
-            return <Redirect to = "/"/>
-        }
-        return(
+    render(){
+        return (
             <div>
-                <h1>Add Credit</h1>
-                <form onSubmit = {this.handleSubmit}>
-                    <div>
-                        <label htmlFor = "amount">Amount of Credit</label>
-                        <input type = "number" name = "amount" value = {this.state.info.amount} onChange = {this.handleChange}></input>
-                    </div>
-                    <div>
-                        <label htmlFor = "description">Description</label>
-                        <input type = "text" name = "description" value = {this.state.info.description} onChange = {this.handleChange}></input>
-                    </div>
-                    <button>Add</button>
+                <h1>Credits</h1>
+                <Link tp = "/">Home</Link> <br></br>
+                <form obSubmit = {this.handleSubmit}>
+                    <label htmlFor = "description">Description</label>
+                    <input name = "description" type = "text" onChange = {this.handleChange}/><br></br>
+                    <label htmlFor = "amount">Amount</label> 
+                    <input type = "number" min = "0.00" step = "0.01" required name = "amount" onChange = {this.handleChange}></input><br></br>
+                    <button>Add Credit</button>
                 </form>
-                <h3>Your Credits</h3>
-                <ul>{this.props.credits.map((credit,idx)=> <li key={credit.id}>{credit.description + "\t$" + credit.amount + "\t" + credit.date.substring(0,10)}</li>)}</ul>
-                <Link to="/">Home</Link>
+                <br></br>
+                <AccountBalance/> 
             </div>
         )
     }
 }
 
-export default Credit;
+export default Credits;

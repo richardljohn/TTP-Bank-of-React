@@ -1,11 +1,11 @@
 import React, {Component} from 'react';
 
-class Account extends Component {
+class AccountBalance extends Component {
     render(){
         return(
-            <div>Balance: ${this.props.accountBalance}</div>
+            <div>Balance: ${this.props.AccountBalance}</div>
         )
     }
 }
 
-export default Account;
+export default AccountBalance;
