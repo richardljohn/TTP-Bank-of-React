@@ -12,7 +12,7 @@ class App extends Component {
   constructor() {
     super();
     this.state = {
-      accountBalance: 0,
+      accountBalance: 0.00,
       currentUser: {
         userName: "richardljohn",
         memberSince: "01/04/2021"
