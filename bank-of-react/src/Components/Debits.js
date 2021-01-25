@@ -15,23 +15,23 @@ class Debit extends Component {
         };
     }
 
-    handleChange = (input) =>  {
+    handleChange = (e) =>  {
         const debitU = {...this.state.info};
-        const nameIn = input.state.name;
-        const valueIn = input.state.value;
+        const nameIn = e.state.name;
+        const valueIn = e.state.value;
         debitU[nameIn] = valueIn;
         this.setState({info: debitU});
     };
 
-    handleSubmit = (output) => {
-        output.preventDefault();
+    handleSubmit = (e) => {
+        e.preventDefault();
         this.props.addDebit(this.state.info);
         this.setState({redirect: true});
     };
 
     render(){
         if(this.state.redirect){
-            return <Redirect to = "/"/>
+            return <Redirect to = "/"/>;
         }
         return (
             <div>

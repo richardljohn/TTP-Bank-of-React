@@ -5,9 +5,9 @@ class UserProfile extends Component {
     render(){
         return (
             <div>
-                <h1>Profile</h1>
+                <h1>User Profile</h1>
                 <div>Username: {this.props.userName}</div>
-                <div>Member since: {this.props.memberSince}</div>
+                <div>Member Since: {this.props.memberSince}</div>
                 <Link to = "/">Home</Link>
             </div>
         );

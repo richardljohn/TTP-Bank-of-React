@@ -1,64 +1,60 @@
 import React, {Component} from 'react';
 import {Link} from 'react-router-dom';
-import AccountBalance from "./AccountBalance";
-import PropTypes from 'prop-types';
-import axios from 'axios';
+import {Redirect} from 'react-router-dom';
 
-class Credits extends Component{
-    constructor () {
+class Credit extends Component { 
+    constructor(){
         super();
         this.state = {
-            credits: [], amount: 0, creditTotal: 0, date: "", description: ""
-        }
-        this.handleChange = this.handleChange.bind(this);
+            info: {
+                amount: 0,
+                description: "",
+                date: ""
+            },
+            redirect: false
+        };
     }
 
-    componentDidMount() { 
-        axios.get("https://moj-api.herokuapp.com/credits")
-        .then((result) => {
-            const res = result.data;
-            console.log(res);
-            this.setState({credits: res});
-            let totalAmount = 0;
-            res.forEach((credit) => (totalAmount += credit.amount));
-            this.setState({totalCredit: totalAmount});
-        })
-    }
+    handleChange = (e) => {
+        const updatedCredit = {...this.state.info};
+        const inputField = e.target.name;
+        const inputValue = e.target.value;
+        updatedCredit[inputField] = inputValue;
+        this.setState({info: updatedCredit});
+    };
 
-    handleChange = (input) => {
-        const n = input.target.name;
-        const v = input.target.value;
-        this.setState({[n]: v});
-    }
-
-    handleSubmit = (output) => {
-        output.preventDefault();
-        let cred = {amount: Number(this.state.amount), date: new Date().toISOString(), description: this.state.description};
-        let arrayOfCredits = [...this.state.credits, cred];
-        this.setState({credits: arrayOfCredits});
-        let totalAmount = 0;
-        arrayOfCredits.forEach((credit) => (totalAmount += credit.amount));
-        const displayTotal = totalAmount.toFixed(2);
-        this.setState({creditTotal: displayTotal});
+    handleSubmit = (e) => {
+        e.preventDefault();
+        this.props.addCredit(this.state.info);
+        this.setState({redirect: true});
     }
 
     render(){
+        if(this.state.redirect){
+            return <Redirect to = "/"/>;
+        }
         return (
             <div>
-                <h1>Credits</h1>
-                <Link tp = "/">Home</Link> <br></br>
-                <form obSubmit = {this.handleSubmit}>
-                    <label htmlFor = "description">Description</label>
-                    <input name = "description" type = "text" onChange = {this.handleChange}/><br></br>
-                    <label htmlFor = "amount">Amount</label> 
-                    <input type = "number" min = "0.00" step = "0.01" required name = "amount" onChange = {this.handleChange}></input><br></br>
-                    <button>Add Credit</button>
+                <h1>Add a Credit</h1>
+                <form onSubmit = {this.handleSubmit}>
+                    <div>
+                        <label htmlFor = "amount">Amount for Credit</label>
+                        <input type = "number" name = "amount" value = {this.state.info.amount} onChange = {this.handleChange}></input>
+                    </div>
+                    <div>
+                        <label htmlFor = "description">Amount for Credit</label>
+                        <input type = "text" name = "description" value = {this.state.info.amount} onChange = {this.handleChange}></input>
+                    </div>
+                    <button>Submit Request</button>
                 </form>
-                <br></br>
-                <AccountBalance/> 
+                <h2>Credits</h2>
+                <ul>
+                    {this.props.credits.map((credit,idx)=> <li key={credit.id}>{credit.description + "\t$" + credit.amount + "\t" + credit.date.substring(0,10)}</li>)}
+                </ul>
+                <Link to="/">Home</Link>
             </div>
         )
     }
 }
 
-export default Credits;
+export default Credit;
