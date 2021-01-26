@@ -1,58 +1,92 @@
 import React, {Component} from 'react';
 import {Link} from 'react-router-dom';
-import {Redirect} from 'react-router-dom';
+import AccountBalance from './AccountBalance';
+import PropTypes from 'prop-types';
+import axios from 'axios';
 
-class Debit extends Component {
+class Debits extends Component {
     constructor(){
         super();
         this.state = {
-            info: {
-                description: "",
-                amount: 0,
-                date: ""
-            },
-            redirect: false
-        };
+            debits: [],
+            debitTotal: 0.00,
+            description: "",
+            amount: 0.00,
+            date: ""
+        }
+        this.handleChange = this.handleChange.bind(this);
     }
 
-    handleChange = (e) =>  {
-        const debitU = {...this.state.info};
-        const nameIn = e.state.name;
-        const valueIn = e.state.value;
-        debitU[nameIn] = valueIn;
-        this.setState({info: debitU});
-    };
+    componentDidMount() {
+        axios
+        .get("https://moj-api.herokuapp.com/debits")
+        .then((response) => {
+            const res = response.data;
+            console.log(res);
+            this.setState({debits: res});
+            let total = 0;
+            res.forEach((debit) => (total += debit.amount));
+            this.setState({debitTotal: total});
+        })
+    }
+
+    handleChange = (e) => {
+        this.setState({[e.target.name]: e.target.value});
+    }
 
     handleSubmit = (e) => {
         e.preventDefault();
-        this.props.addDebit(this.state.info);
-        this.setState({redirect: true});
-    };
-
-    render(){
-        if(this.state.redirect){
-            return <Redirect to = "/"/>;
+        let newDebit = {
+            description: this.state.description,
+            amount: Number(this.state.amount),
+            date: new Date().toISOString()
         }
+        let DebitArray = [...this.state.debits, newDebit];
+        this.setState({debits: DebitArray});
+        let total = 0; 
+        DebitArray.forEach((debit) => (total += debit.amount));
+        let displayTotal = total.toFixed(2);
+        this.setState({debitTotal: displayTotal});
+    }
+
+    render() {
+        let display = (
+            this.state.debits.map((debit) => {
+                return (
+                    <>
+                    <div>Description: {debit.description}</div>
+                    <div>Amount: {debit.amount}</div>
+                    <div>Date: {debit.date}</div> <br></br>
+                    </>
+                )
+            })
+        )
         return (
-            <div>
-                <h1>Add Debit</h1>
-                <form onSubmit = {this.handleSubmit}>
-                    <div>
-                        <label htmlFor = "amount">Amount of Debit</label>
-                        <input type = "number" name = "amount" value = {this.state.info.amount} onChange = {this.handleChange}></input>
-                    </div>
-                    <div>
-                        <label htmlFor = "description">Description</label>
-                        <input type = "text" name = "description" value = {this.state.info.description} onChange = {this.handleChange}></input>
-                    </div>
-                    <button>Add</button>
-                </form>
-                <h3>Your Debits</h3>
-                <ul>{this.props.debits.map((debit,idx)=> <li key={debit.id}>{debit.description + " $" + debit.amount + " " + debit.date.substring(0,10)}</li>)}</ul>
-                <Link to = "/">Home</Link>
+            <div className="App">
+            <h1>Debits</h1>
+            <Link to="/">Home</Link>
+            <br /><br />
+            <form onSubmit={this.handleSubmit}>
+                <label htmlFor="description">Description: </label>
+                <input type="text" name="description" onChange={this.handleChange}/><br></br>
+                <label htmlFor="amount">Amount: </label>
+                <input type="number" min="0" step="0.01" required name="amount" onChange={this.handleChange}/><br></br>
+                <button>Add Debit</button>
+            </form>
+            <br></br>
+            <AccountBalance/>
+            <div>Total Debits: {this.state.totalDebit}</div>
+            <div>{display}</div>
             </div>
         )
     }
 }
 
-export default Debit;
+Debits.propTypes = {
+    debitTotal: PropTypes.number,
+    description: PropTypes.string,
+    amount: PropTypes.number,
+    date: PropTypes.string
+};
+
+export default Debits;

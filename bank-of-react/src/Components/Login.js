@@ -6,23 +6,23 @@ class Login extends Component{
         super()
         this.state = {
             user: {
-                name: "",
+                userName: "",
                 password: ""
             },
             redirect: false
         }
     }
 
-    handleChange = (input) => {
+    handleChange = (e) => {
         const userU = {...this.state.user};
-        const nameIn = input.target.name;
-        const valueIn = input.target.value; 
+        const nameIn = e.target.name;
+        const valueIn = e.target.value; 
         userU[nameIn] = valueIn;
         this.setState({user: userU});
     }
 
-    handleSubmit = (output) => {
-        output.preventDefault();
+    handleSubmit = (e) => {
+        e.preventDefault();
         this.props.mockLogin(this.state.user);
         this.setState({redirect: true});
     }
